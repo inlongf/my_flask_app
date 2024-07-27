@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .navbar {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            margin-left: 15px;
+        }
+        .navbar a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .container h1 {
+            font-size: 2.5em;
+            color: #333;
+        }
+        .container p {
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 10px;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .buttons a {
+            padding: 15px 25px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin: 5px;
+        }
+        .buttons a:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .footer {
+            background-color: #f4f7f9;
+            padding: 10px;
+            text-align: center;
+            font-size: 1em;
+            color: #666;
+            border-top: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div>Welcome, {{ session['username'] }}</div>
+        <div>
+            <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a>
+            <a href="{{ url_for('chat') }}"><i class="fas fa-comments"></i> Chat</a>
+            <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="container">
+        <div>
+            <h1>Welcome to the Dashboard</h1>
+            <p>Use the navigation bar to access different features of the platform.</p>
+            <div class="buttons">
+                <a href="{{ url_for('chat') }}"><i class="fas fa-comments"></i> Go to Chat</a>
+                <!-- 你可以在这里添加更多按钮以链接到其他功能页面 -->
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2024 Your Company. All rights reserved.
+    </div>
+</body>
+</html>

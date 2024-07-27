@@ -1,6 +1,16 @@
-"venv/" 
-"logs/" 
-"*.log" 
-"__pycache__/" 
-/data
-/models
+# Ignore virtual environment
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore log files
+*.log
+
+# Ignore database files
+*.db
+
+# Ignore other files
+.env.txt
+.huggingface/

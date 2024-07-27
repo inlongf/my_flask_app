@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Chat Interface</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid #007bff;
+        }
+
+        .chat-header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .user-info p {
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+
+        .logout-button {
+            padding: 5px 10px;
+            background-color: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .chat-log {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f4f7f9;
+            border-bottom: 2px solid #007bff;
+        }
+
+        .chat-log p {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 70%;
+            font-size: 1em;
+        }
+
+        .chat-log .user {
+            align-self: flex-end;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .chat-log .bot {
+            align-self: flex-start;
+            background-color: #e1f5fe;
+            color: #333;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 20px;
+            border-top: 2px solid #007bff;
+            background-color: #fff;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            margin-right: 10px;
+            font-size: 1em;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #0056b3;
+        }
+
+        .send-button, .voice-button, .image-button, .video-button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 1em;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:disabled, .voice-button:disabled, .image-button:disabled, .video-button:disabled {
+            background-color: #ccc;
+        }
+
+        .send-button:hover, .voice-button:hover, .image-button:hover, .video-button:hover {
+            background-color: #0056b3;
+        }
+
+        .icon {
+            font-size: 1.2em;
+            vertical-align: middle;
+        }
+
+        .image-preview {
+            display: none;
+            margin-top: 10px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+        }
+
+        .emotion {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            background-color: #007bff;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="user-info">
+            <p>Username: {{ session['username'] }}</p>
+            <p>Date: <span id="current-date"></span></p>
+            <p>Time: <span id="current-time"></span></p>
+            <p>IP Address: {{ request.remote_addr }}</p>
+            <p>Weather: <span id="weather"></span></p>
+            <p>Temperature: <span id="temperature"></span></p>
+        </div>
+        <button class="logout-button" onclick="logout()">Logout</button>
+    </div>
+    <div class="chat-log" id="chat-log">
+        <!-- Chat messages will appear here -->
+    </div>
+    <div class="chat-input-container">
+        <input type="text" id="user-input" class="chat-input" placeholder="Type a message..." onkeyup="handleKeyUp(event)">
+        <button class="send-button" id="send-button" onclick="sendMessage('text')" disabled>
+            <i class="fas fa-paper-plane icon"></i>
+        </button>
+        <button class="voice-button" id="voice-button" onclick="startVoiceRecognition()">
+            <i class="fas fa-microphone icon"></i>
+        </button>
+        <button class="video-button" id="video-button" onclick="startVideoRecording()">
+            <i class="fas fa-video icon"></i>
+        </button>
+        <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="uploadImage(event)">
+        <button class="image-button" id="image-button" onclick="document.getElementById('image-input').click()">
+            <i class="fas fa-camera icon"></i>
+        </button>
+    </div>
+    <img id="image-preview" class="image-preview" src="#" alt="Image Preview">
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+        fetchWeather();
+    });
+
+    function updateDateTime() {
+        const now = new Date();
+        document.getElementById('current-date').textContent = now.toLocaleDateString();
+        document.getElementById('current-time').textContent = now.toLocaleTimeString();
+    }
+
+    function fetchWeather() {
+        // 替换为实际天气 API 调用
+        const weather = "Sunny";  // 示例数据
+        const temperature = "25°C";  // 示例数据
+        document.getElementById('weather').textContent = weather;
+        document.getElementById('temperature').textContent = temperature;
+    }
+
+    function logout() {
+        window.location.href = "{{ url_for('logout') }}";
+    }
+
+    function handleKeyUp(event) {
+        const userInput = document.getElementById('user-input').value;
+        document.getElementById('send-button').disabled = !userInput.trim();
+        if (event.keyCode === 13) {
+            sendMessage('text');
+        }
+    }
+
+    function sendMessage(type) {
+        const userInput = document.getElementById('user-input').value.trim();
+        if (!userInput) return;
+
+        const chatLog = document.getElementById('chat-log');
+        appendMessage('user', userInput);
+
+        fetch('/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrf_token')
+            },
+            body: JSON.stringify({ input: userInput, type: type })
+        })
+        .then(response => response.json())
+        .then(data => {
+            appendMessage('bot', data.response);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+        });
+
+        document.getElementById('user-input').value = '';
+        document.getElementById('send-button').disabled = true;
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function appendMessage(sender, message) {
+        const chatLog = document.getElementById('chat-log');
+        const messageElement = document.createElement('p');
+        messageElement.className = sender;
+        messageElement.textContent = message;
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    function startVoiceRecognition() {
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            appendMessage('user', transcript);
+            fetch('/voice_input', {
+                method: 'POST',
+                body: JSON.stringify({ input: transcript }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrf_token')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                appendMessage('bot', data.response);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+            });
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error', event.error);
+            appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+        };
+
+        recognition.start();
+    }
+
+    function startVideoRecording() {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        .then(stream => {
+            const mediaRecorder = new MediaRecorder(stream);
+            const chunks = [];
+
+            mediaRecorder.ondataavailable = function(e) {
+                chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = function() {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const formData = new FormData();
+                formData.append('file', blob);
+
+                fetch('/video_input', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrf_token')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    appendMessage('bot', data.response);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+                });
+            };
+
+            mediaRecorder.start();
+
+            setTimeout(() => {
+                mediaRecorder.stop();
+            }, 5000); // Record for 5 seconds
+        })
+        .catch(error => {
+            console.error('Error accessing media devices.', error);
+        });
+    }
+
+    function uploadImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/upload_image', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrf_token')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            appendMessage('bot', data.detected_objects.map(obj => `Detected: ${obj.label} (Confidence: ${obj.confidence})`).join(', '));
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            appendMessage('bot', 'Sorry, something went wrong. Please try again.');
+        });
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('image-preview').src = e.target.result;
+            document.getElementById('image-preview').style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+</body>
+</html>

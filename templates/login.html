@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ece9e6, #ffffff);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            text-align: center;
+            border: 2px solid #007bff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .login-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .login-header {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #007bff;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #0056b3;
+        }
+
+        .form-group button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .form-group button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .messages {
+            margin-bottom: 20px;
+            color: red;
+        }
+
+        .form-group input::placeholder {
+            color: #999;
+        }
+
+        .form-group input:focus::placeholder {
+            color: transparent;
+        }
+
+        .form-group input[type="text"] {
+            background: url('https://cdn-icons-png.flaticon.com/512/1077/1077114.png') no-repeat;
+            background-size: 20px;
+            background-position: 10px center;
+            padding-left: 40px;
+        }
+
+        .form-group input[type="password"] {
+            background: url('https://cdn-icons-png.flaticon.com/512/2910/2910768.png') no-repeat;
+            background-size: 20px;
+            background-position: 10px center;
+            padding-left: 40px;
+        }
+
+        .form-group button i {
+            margin-right: 10px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 40px;
+            cursor: pointer;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1 class="login-header">Login</h1>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="messages">
+                    <ul>
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('login') }}">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                {{ form.username.label }}<br>
+                {{ form.username(size=32, placeholder='Username') }}
+            </div>
+            <div class="form-group">
+                {{ form.password.label }}<br>
+                {{ form.password(size=32, placeholder='Password') }}
+                <i class="far fa-eye toggle-password"></i>
+            </div>
+            <div class="form-group">
+                <button type="submit">
+                    <i class="fas fa-sign-in-alt"></i> {{ form.submit() }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.querySelector('.toggle-password').addEventListener('click', function (e) {
+            const passwordInput = document.querySelector('[name="password"]');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
+</body>
+</html>
